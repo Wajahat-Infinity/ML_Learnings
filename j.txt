@@ -1,0 +1,43 @@
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+
+# URL of the page to scrape
+url = "https://outfitters.com.pk/collections/men-t-shirts-and-polos"
+# Headers to simulate a real browser visit
+headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
+
+# Fetch the page content
+r = requests.get(url, headers=headers)
+soup = BeautifulSoup(r.text, 'html.parser')
+
+# Lists to store product names and prices
+products = []
+prices = []
+
+# Extract product names
+for product in soup.select("div.product-card-details a.product-link"):
+    product_name = product.get_text(strip=True)
+    if product_name:
+        products.append(product_name)
+
+# Extract prices
+for price in soup.select("span.price-item.price-item--sale"):
+    price_text = price.get_text(strip=True).replace("PKR ", "")
+    prices.append(price_text)
+
+# Ensure both lists are the same length
+print(f"Number of products: {len(products)}")
+print(f"Number of prices: {len(prices)}")
+
+# Adjust lengths if necessary
+if len(products) > len(prices):
+    products = products[:len(prices)]
+elif len(prices) > len(products):
+    prices = prices[:len(products)]
+
+# Create a pandas DataFrame
+df = pd.DataFrame({"Product": products, "Price": prices})
+
+# Print the DataFrame
+print(df)
